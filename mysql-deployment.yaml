@@ -1,11 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysql-deployment
-  labels:
-    app: mysql
+  name: mysql
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: mysql
@@ -16,7 +13,7 @@ spec:
     spec:
       containers:
       - name: mysql
-        image: mysql:latest
+        image: mysql:5.7
         ports:
         - containerPort: 3306
         env:
@@ -24,22 +21,22 @@ spec:
           valueFrom:
             secretKeyRef:
               name: mysql-secret
-              key: mysql-root-password
-        - name: MYSQL_DATABASE
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: mysql-database
+              key: MYSQL_ROOT_PASSWORD
         - name: MYSQL_USER
           valueFrom:
             secretKeyRef:
               name: mysql-secret
-              key: mysql-user
+              key: MYSQL_USER
         - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
               name: mysql-secret
-              key: mysql-password
+              key: MYSQL_PASSWORD
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: mysql-config
+              key: MYSQL_DATABASE
 ---
 apiVersion: v1
 kind: Service
@@ -49,6 +46,6 @@ spec:
   selector:
     app: mysql
   ports:
-    - protocol: TCP
-      port: 3306
+    - port: 3306
       targetPort: 3306
+  type: ClusterIP
